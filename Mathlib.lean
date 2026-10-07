@@ -5018,6 +5018,7 @@ public import Mathlib.GroupTheory.Perm.Centralizer
 public import Mathlib.GroupTheory.Perm.Closure
 public import Mathlib.GroupTheory.Perm.ClosureSwap
 public import Mathlib.GroupTheory.Perm.ConjAct
+public import Mathlib.GroupTheory.Perm.ConjClassesPartition
 public import Mathlib.GroupTheory.Perm.Cycle.Basic
 public import Mathlib.GroupTheory.Perm.Cycle.Concrete
 public import Mathlib.GroupTheory.Perm.Cycle.Factors
@@ -6646,6 +6647,7 @@ public import Mathlib.RepresentationTheory.Action
 public import Mathlib.RepresentationTheory.AlgebraRepresentation.Basic
 public import Mathlib.RepresentationTheory.Basic
 public import Mathlib.RepresentationTheory.Character
+public import Mathlib.RepresentationTheory.CharacterCount
 public import Mathlib.RepresentationTheory.Coinduced
 public import Mathlib.RepresentationTheory.Coinvariants
 public import Mathlib.RepresentationTheory.Continuous.Basic
