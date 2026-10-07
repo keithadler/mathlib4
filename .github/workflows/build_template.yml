@@ -91,6 +91,27 @@ jobs:
         run: |
           # We just populate the env vars for this step to make them viewable in the logs
 
+      # EXPERIMENT: sample CPU and memory every 5 s for the whole job (cancelled at the end).
+      - name: start resource sampler
+        id: sampler
+        background: true
+        shell: bash
+        run: |
+          ncpu=$(nproc)
+          end=$((SECONDS + 1800))
+          pb=0; pt=0
+          while [ "$SECONDS" -lt "$end" ]; do
+            read -r _ u n s i w q sq st _ < /proc/stat
+            busy=$((u + n + s + w + q + sq + st)); total=$((busy + i))
+            if [ "$pt" -ne 0 ]; then
+              cores=$(awk -v b=$((busy - pb)) -v t=$((total - pt)) -v c="$ncpu" 'BEGIN { printf "%.1f", (t > 0 ? b / t * c : 0) }')
+              mem=$(awk '/MemTotal/ { t = $2 } /MemAvailable/ { a = $2 } END { print int((t - a) / 1024) }' /proc/meminfo)
+              printf '%s cores_busy=%s/%s mem_used_mib=%s\n' "$(date -u +%H:%M:%S)" "$cores" "$ncpu" "$mem"
+            fi
+            pb=$busy; pt=$total
+            sleep 5
+          done
+
       - name: Checkout local actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -409,6 +430,9 @@ jobs:
             echo "'mk_all --check' passed successfully."
           fi
 
+      - name: stop resource sampler
+        cancel: sampler
+
   test_lint:
     name: Test and lint
     needs: [build]
@@ -458,6 +482,27 @@ jobs:
           sparse-checkout: .github/actions
           path: workflow-actions
           persist-credentials: false # no later step needs git credentials
+
+      # EXPERIMENT: sample CPU and memory every 5 s for the whole job (cancelled at the end).
+      - name: start resource sampler
+        id: sampler
+        background: true
+        shell: bash
+        run: |
+          ncpu=$(nproc)
+          end=$((SECONDS + 1800))
+          pb=0; pt=0
+          while [ "$SECONDS" -lt "$end" ]; do
+            read -r _ u n s i w q sq st _ < /proc/stat
+            busy=$((u + n + s + w + q + sq + st)); total=$((busy + i))
+            if [ "$pt" -ne 0 ]; then
+              cores=$(awk -v b=$((busy - pb)) -v t=$((total - pt)) -v c="$ncpu" 'BEGIN { printf "%.1f", (t > 0 ? b / t * c : 0) }')
+              mem=$(awk '/MemTotal/ { t = $2 } /MemAvailable/ { a = $2 } END { print int((t - a) / 1024) }' /proc/meminfo)
+              printf '%s cores_busy=%s/%s mem_used_mib=%s\n' "$(date -u +%H:%M:%S)" "$cores" "$ncpu" "$mem"
+            fi
+            pb=$busy; pt=$total
+            sleep 5
+          done
 
       # Shared self-hosted setup (see the action).
       - name: Set up build environment
@@ -693,6 +738,9 @@ jobs:
           NIGHTLY_TESTING_REPO: leanprover-community/mathlib4-nightly-testing
         run: |
           "${CI_SCRIPTS_DIR}/maintainer/lean-pr-testing-comments.sh" batteries
+
+      - name: stop resource sampler
+        cancel: sampler
 
   upload_cache:
     name: Upload to cache
@@ -935,6 +983,27 @@ jobs:
           path: workflow-actions
           persist-credentials: false # no later step needs git credentials
 
+      # EXPERIMENT: sample CPU and memory every 5 s for the whole job (cancelled at the end).
+      - name: start resource sampler
+        id: sampler
+        background: true
+        shell: bash
+        run: |
+          ncpu=$(nproc)
+          end=$((SECONDS + 1800))
+          pb=0; pt=0
+          while [ "$SECONDS" -lt "$end" ]; do
+            read -r _ u n s i w q sq st _ < /proc/stat
+            busy=$((u + n + s + w + q + sq + st)); total=$((busy + i))
+            if [ "$pt" -ne 0 ]; then
+              cores=$(awk -v b=$((busy - pb)) -v t=$((total - pt)) -v c="$ncpu" 'BEGIN { printf "%.1f", (t > 0 ? b / t * c : 0) }')
+              mem=$(awk '/MemTotal/ { t = $2 } /MemAvailable/ { a = $2 } END { print int((t - a) / 1024) }' /proc/meminfo)
+              printf '%s cores_busy=%s/%s mem_used_mib=%s\n' "$(date -u +%H:%M:%S)" "$cores" "$ncpu" "$mem"
+            fi
+            pb=$busy; pt=$total
+            sleep 5
+          done
+
       # Sets MATHLIB_CACHE_FROM in env so the `cache get` calls below pick
       # up the trust-class-appropriate read fallback automatically. Every job
       # that reads or writes the cache gets this policy from the same composite
@@ -1125,6 +1194,9 @@ jobs:
 
       # We no longer run `lean4checker` in regular CI, as it is quite expensive for little benefit.
       # Instead we run it in a cron job on master: see `daily.yml`.
+
+      - name: stop resource sampler
+        cancel: sampler
 
   style_lint:
     name: Lint style
